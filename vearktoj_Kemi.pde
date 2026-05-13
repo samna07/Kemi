@@ -187,7 +187,163 @@ void drawApproveScreen() {
   textSize(34);
   text("Godkend kemikalier", width / 2, 90);
 
-  //hent databasen her til
+/*    DATABASEN/////////
+  I want to replace the database you have created for the program with this data: 
+
+Navn: Saltsyre
+Molmasse: 36.46 g/mol
+Formel:HCl
+Kategori: Syre
+Tilstand: Væske
+Sikkerhedsdatablad:https://app.ecoonline.com//documents/msds/1014950/28142883_286_a75e1c80e9bcecc4986832c615479bb0.pdf 
+Note: Syre-base, pH, titrering
+
+--------------------------------
+
+Navn: Natriumhydroxid
+Molmasse: 40 g/mol
+Formel:NaOH
+Kategori: Base
+Tilstand: Væske
+Sikkerhedsdatablad: https://media.frederiksen-scientific.com/documents/25673778_286_517396d3fbd504f10a4b07b098e8f89d.pdf
+Note: Titrering, pH, neutralisation
+
+
+--------------------------------
+
+Navn: Ethansyre
+Molmasse: 60.05 g/mol
+Formel:CH3COOH
+Kategori: Svag Syre
+Tilstand: Væske
+Sikkerhedsdatablad: https://media.frederiksen-scientific.com/documents/23709882_286_729ba15a5db5791b74f8363a221e0ae6.pdf
+Note: Syrer, pH, eddikesyre
+
+--------------------------------
+
+Navn: Ammoniakvand
+Molmasse: 17.03 g/mol
+Formel:NH3
+Kategori: Base
+Tilstand: Væske
+Sikkerhedsdatablad: https://media.frederiksen-scientific.com/documents/23709144_286_90d05ef88e885f905f520e6d0ad12f38.pdf
+Note: Svage baser, ligevægt
+
+
+--------------------------------
+
+Navn: Natriumchlorid
+Molmasse: 58.44 g/mol
+Formel:NaCl
+Kategori: Salt
+Tilstand: Fast stof
+Sikkerhedsdatablad: https://media.frederiksen-scientific.com/documents/24468866_286_fbaaa325691679abf8abf8fcec5d54e4.pdf
+Note: Ioner, opløsninger, ledningsevne
+--------------------------------
+
+Navn: Kobbersulfat
+Molmasse: 249.68 g/mol
+Formel:CuSO4·5H2O
+Kategori: Salt
+Tilstand: Væske
+Sikkerhedsdatablad: https://media.frederiksen-scientific.com/documents/24563838_286_a3b9d27bbdf5418689b03109439d953f.pdf
+Note: Ioner, farvereaktioner, redox
+
+--------------------------------
+
+Navn: Sølvnitrat
+Molmasse: 169.87 g/mol
+Formel:AgNO3
+Kategori: Salt
+Tilstand: Væske
+Sikkerhedsdatablad:https://media.frederiksen-scientific.com/documents/25364356_286_d50d143e9c85f7881a8da2ca42052dc3.pdf
+Note: Påvisning af chloridioner
+
+--------------------------------
+
+Navn: Natriumcarbonat
+Molmasse: 105.99 g/mol
+Formel:Na2CO3
+Kategori: Base
+Tilstand: Fast stof
+Sikkerhedsdatablad: https://media.frederiksen-scientific.com/documents/24722646_286_8152d212e9a2f2e10f3bde8721f2e9b5.pdf
+Note: Syre-base, carbonatreaktioner
+
+--------------------------------
+
+
+Navn: Natriumhydrogencarbonat
+Molmasse: 84.01 g/mol
+Formel:NaHCO3
+Kategori: Base
+Tilstand: Fast stof
+Sikkerhedsdatablad: https://media.frederiksen-scientific.com/documents/24722646_286_8152d212e9a2f2e10f3bde8721f2e9b5.pdf
+Note: CO₂-dannelse, syrereaktioner
+
+--------------------------------
+
+Navn: Kaliumpermanganat
+Molmasse: 1 M
+Formel:HCl
+Kategori: Oxidationsmiddel
+Tilstand: Væske
+Sikkerhedsdatablad: 
+Note: Redoxforsøg
+
+
+--------------------------------
+
+
+Navn: Kaliumiodid
+Molmasse: 158.04 g/mol
+Formel:KMnO4
+Kategori: Salt
+Tilstand: Væske
+Sikkerhedsdatablad: https://media.frederiksen-scientific.com/documents/24240288_286_b5a300a8f9a71b93ca35cb0ff77e030f.pdf
+Note: Redox, iodreaktioner
+--------------------------------
+
+Navn: Jodopløsning
+Molmasse: 58.04 g/mol
+Formel:I2
+Kategori: Reagens
+Tilstand: Væske
+Sikkerhedsdatablad: https://media.frederiksen-scientific.com/documents/24909491_286_b24bb79f6fb292c2458f0d4da3df21f1.pdf
+Note: Stivelsestest, redox
+
+--------------------------------
+
+
+Navn: Ethanol
+Molmasse: 46.07 g/mol
+Formel:C2H5OH
+Kategori: Organisk stof
+Tilstand: Væske
+Sikkerhedsdatablad: https://media.frederiksen-scientific.com/documents/23435890_286_fe1aed637df262b2a08f40fae0c46c1d.pdf
+Note: Alkoholer, forbrænding, opløselighed
+
+--------------------------------
+
+Navn: Acetone
+Molmasse:58.08 g/mol
+Formel:(CH3)2CO
+Kategori: Organisk stof
+Tilstand: Væske
+Sikkerhedsdatablad: https://media.frederiksen-scientific.com/documents/23409280_286_0bec3da39adbeda8cd7b70c494d4b812.pdf
+Note: Opløsningsmiddel, organiske stoffer
+
+
+--------------------------------
+
+Navn: Hydrogenperoxid
+Molmasse: 34.01 g/mol
+Formel:H2O2
+Kategori: Oxidationsmiddel
+Tilstand: Væske
+Sikkerhedsdatablad: https://media.frederiksen-scientific.com/documents/24207584_286_642f1788913feab99c544588b2f99004.pdf
+Note: Reaktionshastighed, katalyse, redox
+
+*/
 
   drawBackButton();
 }
