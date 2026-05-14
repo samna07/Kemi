@@ -23,8 +23,20 @@ int approvePage = 0;
 int studentPage = 0;
 int chemicalsPerPage = 5;
 
+//søge
 String searchApprove = "";
 String searchStudent = "";
+
+
+// Manuel tilføjelse
+String manualName = "";
+String manualFormula = "";
+String manualMolmasse = "";
+String manualCategory = "";
+String manualDescription = "";
+String manualLink = "";
+
+String message = "";
 
 int activeField = -1;
 
@@ -120,6 +132,13 @@ void drawSmallButton(int x, int y, int w, int h, String buttonText) {
   textAlign(CENTER, CENTER);
   textSize(12);
   text(buttonText, x + w / 2, y + h / 2);
+}
+
+void drawLabel(String label, int x, int y) {
+  fill(0);
+  textAlign(LEFT, CENTER);
+  textSize(15);
+  text(label, x, y);
 }
 
 void drawBackButton() {
@@ -530,7 +549,42 @@ void addChemical(String name, String formula, String molmasse, String category, 
 
   totalChemicals++;
 }
+void saveManualChemical() {
+  if (trim(manualName).length() == 0) {
+    message = "Du skal skrive et navn.";
+    return;
+  }
 
+  String formula = manualFormula;
+  if (trim(formula).length() == 0) {
+    formula = "Ikke angivet";
+  }
+
+  String molmasse = manualMolmasse;
+  if (trim(molmasse).length() == 0) {
+    molmasse = "Ikke angivet";
+  }
+
+  String category = manualCategory;
+  if (trim(category).length() == 0) {
+    category = "Andet";
+  }
+
+  String description = manualDescription;
+  if (trim(description).length() == 0) {
+    description = "Ingen beskrivelse endnu.";
+  }
+
+  String linkText = manualLink;
+  if (trim(linkText).length() == 0) {
+    linkText = "https://www.frederiksen-scientific.dk/";
+  }
+
+  if (!linkText.startsWith("http://") && !linkText.startsWith("https://")) {
+    linkText = "https://" + linkText;
+  }
+
+}
 // søgning
 // ======================================================
 
@@ -611,7 +665,35 @@ void drawManualScreen() {
   textSize(34);
   text("Manuel tilføjelse", width / 2, 90);
 
+  fill(0);
+  textAlign(LEFT, CENTER);
+  textSize(15);
+  text("Her kan læreren tilføje et kemikalie, hvis det ikke findes i databasen.", 70, 85);
 
+  drawLabel("Navn:", 70, 135);
+  drawInputBox(250, 115, 420, 35, manualName, "fx Saltsyre", 1);
+
+  drawLabel("Formel:", 70, 185);
+  drawInputBox(250, 165, 420, 35, manualFormula, "fx HCl", 2);
+
+  drawLabel("Molmasse:", 70, 235);
+  drawInputBox(250, 215, 420, 35, manualMolmasse, "fx 36.46 g/mol", 3);
+
+  drawLabel("Kategori:", 70, 285);
+  drawInputBox(250, 265, 420, 35, manualCategory, "fx Syre, Base eller Salt", 4);
+
+  drawLabel("Beskrivelse:", 70, 335);
+  drawInputBox(250, 315, 420, 35, manualDescription, "kort beskrivelse", 5);
+
+  drawLabel("Sikkerhedsdatablad:", 70, 385);
+  drawInputBox(250, 365, 420, 35, manualLink, "link til hjemmeside", 6);
+
+  drawButton(250, 450, 250, 50, "Tilføj kemikalie");
+
+  fill(0, 120, 0);
+  textAlign(LEFT, CENTER);
+  textSize(15);
+  text(message, 250, 535);
 
   drawBackButton();
 }
