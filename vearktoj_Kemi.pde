@@ -1,6 +1,6 @@
 
 
-int screen = 0;
+int screen = 3;
 // 0 = startside
 // 1 = lærerside
 // 2 = elevside
@@ -114,6 +114,23 @@ void drawBackButton() {
   textAlign(CENTER, CENTER);
 }
 
+boolean backClicked() {
+  if (mouseOver(20, height - 70, 120, 50)) {
+    return true;
+  }
+
+  return false;
+}
+
+boolean mouseOver(int x, int y, int w, int h) {
+  if (mouseX > x && mouseX < x + w &&
+      mouseY > y && mouseY < y + h) {
+    return true;
+  }
+
+  return false;
+}
+
 //ved Tryk/ navigeere
 //===============================================================
 void mousePressed() {
@@ -166,16 +183,18 @@ void mousePressed() {
     if (backClicked()) {
       screen = 1;
     }
+    
+    // Klik på checkbox ved kemikalier
+    for (int i = 0; i < totalChemicals; i++) {
+     int x = 70;
+     int y = 145 + i * 85;
+
+      if (mouseOver(x + 690, y + 20, 28, 28)) {
+        chemApproved[i] = !chemApproved[i];
+      }
   }
 }
 
-boolean backClicked() {
-  if (mouseX > 20 && mouseX < 120 &&
-      mouseY > height - 70 && mouseY < height - 20) {
-    return true;
-  }
-
-  return false;
 }
 
 // elevsiden
@@ -183,12 +202,44 @@ boolean backClicked() {
 
 void drawStudentScreen() {
   fill(0);
-  textSize(36);
-  text("Elev Siden", width / 2, 90);
+  textSize(34);
+  text("Elev Siden", width / 2, 60);
 
- 
+  int y = 150;
+  int approvedCount = 0;
 
+  for (int i = 0; i < totalChemicals; i++) {
+    if (chemApproved[i]) {
+      drawStudentChemicalCard(i, 70, y);
+      y = y + 85;
+      approvedCount++;
+    }
+  }
+  
+
+  if (approvedCount == 0) {
+    fill(0);
+    textSize(18);
+    text("Der er endnu ingen godkendte kemikalier.", width / 2, 300);
+  }
   drawBackButton();
+  }
+
+void drawStudentChemicalCard(int i, int x, int y) {
+  fill(255);
+  stroke(180);
+  rect(x, y, 760, 70, 10);
+
+  fill(0);
+  textAlign(LEFT, CENTER);
+  textSize(18);
+  text(chemName[i], x + 20, y + 20);
+
+  textSize(13);
+  text("Kategori: " + chemCategory[i], x + 20, y + 45);
+  text("Info: " + chemDescription[i], x + 190, y + 45);
+
+
 }
 
 
