@@ -1,6 +1,6 @@
 
 
-int screen = 3;
+int screen = 2;
 // 0 = startside
 // 1 = lærerside
 // 2 = elevside
@@ -8,7 +8,7 @@ int screen = 3;
 // 4 = manuel tilføjelse
 // 5 = skabe
 
-int maxChemicals = 20;
+int maxChemicals = 40;
 int totalChemicals = 0;
 
 String[] chemName = new String[maxChemicals];
@@ -18,6 +18,15 @@ String[] chemCategory = new String[maxChemicals];
 String[] chemDescription = new String[maxChemicals];
 String[] chemLink = new String[maxChemicals];
 boolean[] chemApproved = new boolean[maxChemicals];
+
+int approvePage = 0;
+int studentPage = 0;
+int chemicalsPerPage = 5;
+
+String searchApprove = "";
+String searchStudent = "";
+
+int activeField = -1;
 
 void setup() {
   size(900, 700);
@@ -90,7 +99,7 @@ void drawTeacherMenu() {
   drawBackButton();
 }
 
-//  tilbageknap+nomal knap
+//  knapper og andre funktioner
 //====================================================
 void drawButton(int x, int y, int w, int h, String buttonText) {
   fill(180, 200, 255);
@@ -100,6 +109,16 @@ void drawButton(int x, int y, int w, int h, String buttonText) {
   fill(0);
   textAlign(CENTER, CENTER);
   textSize(20);
+  text(buttonText, x + w / 2, y + h / 2);
+}
+void drawSmallButton(int x, int y, int w, int h, String buttonText) {
+  fill(180, 200, 255);
+  stroke(0);
+  rect(x, y, w, h, 8);
+
+  fill(0);
+  textAlign(CENTER, CENTER);
+  textSize(12);
   text(buttonText, x + w / 2, y + h / 2);
 }
 
@@ -131,9 +150,92 @@ boolean mouseOver(int x, int y, int w, int h) {
   return false;
 }
 
+void drawPageButtons(int page, int totalItems) {
+  drawSmallButton(300, 625, 100, 35, "Forrige");
+  drawSmallButton(500, 625, 100, 35, "Næste");
+  
+    fill(0);
+  textAlign(CENTER, CENTER);
+  textSize(14);
+  text("Side " + (page + 1), 450, 642);
+}
+
+void checkPageButtons(int totalItems, int whichScreen) {
+  if (mouseOver(300, 625, 100, 35)) {
+    if (whichScreen == 3 && approvePage > 0) {
+      approvePage--;
+    }
+//her senerer 2og 4
+    if (whichScreen == 2 && studentPage > 0) {
+      studentPage--;
+    }
+  }
+
+  if (mouseOver(500, 625, 100, 35)) {
+    if (whichScreen == 3) {
+      if ((approvePage + 1) * chemicalsPerPage < totalItems) {
+        approvePage++;
+      }
+    }
+
+    if (whichScreen == 2) {
+      if ((studentPage + 1) * chemicalsPerPage < totalItems) {
+        studentPage++;
+      }
+    }
+  }
+}
+
+int countSearchResults(String searchText, boolean onlyApproved) {
+  int count = 0;
+
+  for (int i = 0; i < totalChemicals; i++) {
+    if (onlyApproved && !chemApproved[i]) {
+      continue;
+    }
+
+    if (matchesSearch(i, searchText)) {
+      count++;
+    }
+  }
+
+  return count;
+}
+//--------------------------------------------------
+
+void keyPressed() {
+  if (activeField == -1) {
+    return;
+  }
+//gentjek efter elev siden////////
+  String currentText = getActiveText();
+
+  if (key == BACKSPACE) {
+    if (currentText.length() > 0) {
+      currentText = currentText.substring(0, currentText.length() - 1);
+    }
+  } else if (key == ENTER || key == RETURN) {
+    activeField = -1;
+  } else if (key != CODED) {
+    currentText = currentText + key;
+  }
+
+  setActiveText(currentText);
+
+  // Når man søger, starter man fra side 1 igen
+  if (activeField == 100) {
+    approvePage = 0;
+  }
+
+  if (activeField == 101) {
+    studentPage = 0;
+  }
+}
+
 //ved Tryk/ navigeere
 //===============================================================
 void mousePressed() {
+   activeField = -1;
   if (screen == 0) {
     // Lærer-knap
     if (mouseX > width / 2 - 110 && mouseX < width / 2 + 110 &&
@@ -177,51 +279,85 @@ void mousePressed() {
     if (backClicked()) {
       screen = 0;
     }
+    
+    if (mouseOver(130, 75, 350, 40)) {
+      activeField = 101;
   }
-
-  else if (screen == 3 || screen == 4 || screen == 5) {
-    if (backClicked()) {
-      screen = 1;
-    }
+    int shown = 0;
+    int found = 0;
+    int skip = approvePage * chemicalsPerPage;
+    
     
     // Klik på checkbox ved kemikalier
     for (int i = 0; i < totalChemicals; i++) {
+     if (matchesSearch(i, searchApprove)) {
+     if (found >= skip && shown < chemicalsPerPage) {
      int x = 70;
-     int y = 145 + i * 85;
+     int y = 165 + shown * 85;
 
-      if (mouseOver(x + 690, y + 20, 28, 28)) {
-        chemApproved[i] = !chemApproved[i];
+          if (mouseOver(x + 500, y + 20, 150, 30)) {
+            link(chemLink[i]);
+          }
+
+          if (mouseOver(x + 690, y + 20, 28, 28)) {
+            chemApproved[i] = !chemApproved[i];
+          }
+
+          shown++;
+        }
+
+        found++;
       }
+    }
+
+    int totalFound = countSearchResults(searchApprove, false);
+    checkPageButtons(totalFound, 3);
+  }
+
+  else if (screen == 4 || screen == 5) {
+    if (backClicked()) {
+      screen = 1;
+    }
   }
 }
-
-}
-
 // elevsiden
 // ======================================================
 
 void drawStudentScreen() {
   fill(0);
   textSize(34);
-  text("Elev Siden", width / 2, 60);
+  text("Elev Siden", width / 2, 45);
 
-  int y = 150;
-  int approvedCount = 0;
+  fill(0);
+  textAlign(LEFT, CENTER);
+  textSize(16);
+  text("Søg:", 80, 95);
+  drawInputBox(130, 75, 350, 40, searchStudent, "Skriv kemikaliets navn", 101);
+
+  int shown = 0;
+  int found = 0;
+  int skip = studentPage * chemicalsPerPage;
 
   for (int i = 0; i < totalChemicals; i++) {
-    if (chemApproved[i]) {
-      drawStudentChemicalCard(i, 70, y);
-      y = y + 85;
-      approvedCount++;
+    if (chemApproved[i] && matchesSearch(i, searchStudent)) {
+      if (found >= skip && shown < chemicalsPerPage) {
+        int y = 165 + shown * 85;
+        drawStudentChemicalCard(i, 70, y);
+        shown++;
+      }
+
+      found++;
     }
   }
   
 
-  if (approvedCount == 0) {
+  if (found == 0) {
     fill(0);
+    textAlign(CENTER,CENTER);
     textSize(18);
-    text("Der er endnu ingen godkendte kemikalier.", width / 2, 300);
+    text("Ingen godkendte kemikalier fundet", width / 2, 360);
   }
+  drawPageButtons(studentPage, found);
   drawBackButton();
   }
 
@@ -232,14 +368,17 @@ void drawStudentChemicalCard(int i, int x, int y) {
 
   fill(0);
   textAlign(LEFT, CENTER);
-  textSize(18);
-  text(chemName[i], x + 20, y + 20);
+  textSize(17);
+  text(chemName[i], x + 20, y + 18);
 
   textSize(13);
-  text("Kategori: " + chemCategory[i], x + 20, y + 45);
-  text("Info: " + chemDescription[i], x + 190, y + 45);
+  text("Formel: " + chemFormula[i], x + 20, y + 42);
+  text("Molmasse: " + chemMolmasse[i], x + 160, y + 42);
+  text("Kategori: " + chemCategory[i], x + 360, y + 42);
 
-
+  drawSmallButton(x + 580, y + 20, 150, 30, "Sikkerhedsdatablad");
+  
+  textAlign(CENTER, CENTER);
 }
 
 
@@ -251,18 +390,43 @@ void drawApproveScreen() {
   textSize(34);
   text("Godkend kemikalier", width / 2, 60);
 
+  fill(0);
+  textAlign(LEFT, CENTER);
+  textSize(16);
+  text("Søg:", 80, 95);
+  
+  drawInputBox(130, 75, 350, 40, searchApprove, "Skriv kemikaliets navn", 100);
+  
   textSize(15);
   fill(70);
-  text("Sæt flueben ved de kemikalier, der findes på skolen.", width / 2, 105);
+  text("Sæt flueben ved de kemikalier, der findes på skolen.", width / 2, 105); //**redigere placering
+  
+  int shown = 0;
+  int found = 0;
+  int skip = approvePage * chemicalsPerPage;
 
   // Viser kemikalierne
   for (int i = 0; i < totalChemicals; i++) {
-    int y = 145 + i * 85;
+    if (matchesSearch(i, searchApprove)) {
+      if (found >= skip && shown < chemicalsPerPage) {
+        int y = 165 + shown * 85;
     drawChemicalCard(i, 70, y);
+    shown++;
   }
-
-  drawBackButton();
+    found++;
+    }
+  }
+  
+  if (found == 0) {
+    fill(0);
+    textAlign(CENTER, CENTER);
+    textSize(18);
+    text("Ingen kemikalier fundet.", width / 2, 360);
+  }
+  drawPageButtons(approvePage, found);
+  drawBackButton();  ///****tilbage knap virker ik fix 
 }
+
 
 void drawChemicalCard(int i, int x, int y) {
   fill(255);
@@ -275,8 +439,11 @@ void drawChemicalCard(int i, int x, int y) {
   text(chemName[i], x + 20, y + 20);
 
   textSize(13);
+  text("Formel: " + chemFormula[i], x + 20, y + 42);
   text("Kategori: " + chemCategory[i], x + 20, y + 45);
-  text("Info: " + chemDescription[i], x + 190, y + 45);
+  text("Molmasse: " + chemMolmasse[i], x + 330, y + 42);
+  
+  drawSmallButton(x + 500, y + 20, 150, 30, "Sikkerhedsdatablad");
 
   // Checkbox
   fill(255);
@@ -363,6 +530,78 @@ void addChemical(String name, String formula, String molmasse, String category, 
 
   totalChemicals++;
 }
+
+// søgning
+// ======================================================
+
+boolean matchesSearch(int i, String searchText) {
+  String s = searchText.toLowerCase();
+
+  if (chemName[i].toLowerCase().contains(s)) {
+    return true;
+  }
+
+  if (chemCategory[i].toLowerCase().contains(s)) {
+    return true;
+  }
+
+  if (chemFormula[i].toLowerCase().contains(s)) {
+    return true;
+  }
+
+  return false;
+}
+
+//input feltetl
+
+void drawInputBox(int x, int y, int w, int h, String value, String placeholder, int fieldNumber) {
+  if (activeField == fieldNumber) {
+    fill(255);
+    stroke(0, 100, 255);
+    strokeWeight(2);
+  } else {
+    fill(255);
+    stroke(120);
+    strokeWeight(1);
+  }
+
+  rect(x, y, w, h, 5);
+  strokeWeight(1);
+
+  textAlign(LEFT, CENTER);
+  textSize(14);
+
+  if (value.length() == 0) {
+    fill(140);
+    text(placeholder, x + 8, y + h / 2);
+  } else {
+    fill(0);
+    text(value, x + 8, y + h / 2);
+  }
+}
+
+String getActiveText() {
+  if (activeField == 100) {
+    return searchApprove;
+  }
+
+  if (activeField == 101) {
+    return searchStudent;
+  }
+
+  return "";
+}
+
+void setActiveText(String t) {
+  if (activeField == 100) {
+    searchApprove = t;
+  }
+
+  if (activeField == 101) {
+    searchStudent = t;
+  }
+}
+
 
 // Manuel tilføjelse
 // ======================================================
