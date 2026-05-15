@@ -103,16 +103,7 @@ void draw() {
     drawDetailsScreen();
     
   }
-
-  //se musen for draw (husk x den)
-  pushStyle();
-  fill(255, 0, 0);
-  textSize(16);
-  textAlign(LEFT, TOP);
-  text("x: " + mouseX + " y: " + mouseY, 10, 10);
-  popStyle();
 }
-
 // Startside
 // ======================================================
 
