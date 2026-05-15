@@ -1,6 +1,6 @@
 
 
-int screen = 2;
+int screen = 4;
 // 0 = startside
 // 1 = lærerside
 // 2 = elevside
@@ -8,15 +8,18 @@ int screen = 2;
 // 4 = manuel tilføjelse
 // 5 = skabe
 
-int maxChemicals = 40;
+int maxChemicals = 50;
 int totalChemicals = 0;
 
 String[] chemName = new String[maxChemicals];
 String[] chemFormula = new String[maxChemicals];
 String[] chemMolmasse = new String[maxChemicals];
 String[] chemCategory = new String[maxChemicals];
+String[] chemState = new String[maxChemicals];
+String[] chemLocation = new String[maxChemicals];
 String[] chemDescription = new String[maxChemicals];
 String[] chemLink = new String[maxChemicals];
+String[] chemNotes = new String[maxChemicals];
 boolean[] chemApproved = new boolean[maxChemicals];
 
 int approvePage = 0;
@@ -34,10 +37,14 @@ String manualFormula = "";
 String manualMolmasse = "";
 String manualCategory = "";
 String manualDescription = "";
+String manualState = "";
+String manualLocation = "";
 String manualLink = "";
+String manualNotes = "";
 
 String message = "";
 
+//tekstfelt
 int activeField = -1;
 
 void setup() {
@@ -173,7 +180,7 @@ void drawPageButtons(int page, int totalItems) {
   drawSmallButton(300, 625, 100, 35, "Forrige");
   drawSmallButton(500, 625, 100, 35, "Næste");
   
-    fill(0);
+  fill(0);
   textAlign(CENTER, CENTER);
   textSize(14);
   text("Side " + (page + 1), 450, 642);
@@ -184,7 +191,7 @@ void checkPageButtons(int totalItems, int whichScreen) {
     if (whichScreen == 3 && approvePage > 0) {
       approvePage--;
     }
-//her senerer 2og 4
+
     if (whichScreen == 2 && studentPage > 0) {
       studentPage--;
     }
@@ -220,7 +227,7 @@ int countSearchResults(String searchText, boolean onlyApproved) {
 
   return count;
 }
-//--------------------------------------------------
+//----indtast----------------------------------------------
 
 void keyPressed() {
   if (activeField == -1) {
@@ -309,10 +316,44 @@ void mousePressed() {
     
     // Klik på checkbox ved kemikalier
     for (int i = 0; i < totalChemicals; i++) {
-     if (matchesSearch(i, searchApprove)) {
+     if (chemApproved[i]&& matchesSearch(i, searchStudent)) {
      if (found >= skip && shown < chemicalsPerPage) {
      int x = 70;
      int y = 165 + shown * 85;
+
+          if (mouseOver(x + 580, y + 20, 150, 30)) {
+            link(chemLink[i]);
+          }
+
+          shown++;
+        }
+
+        found++;
+      }
+    }
+
+    int totalFound = countSearchResults(searchApprove, true);
+    checkPageButtons(totalFound, 2);
+  }
+
+  else if (screen == 3) {
+    if (backClicked()) {
+      screen = 1;
+    }
+    
+    if (mouseOver(130, 75, 350, 40)) {
+      activeField = 100;
+  }
+  
+      int shown = 0;
+    int found = 0;
+    int skip = approvePage * chemicalsPerPage;
+
+    for (int i = 0; i < totalChemicals; i++) {
+      if (matchesSearch(i, searchApprove)) {
+        if (found >= skip && shown < chemicalsPerPage) {
+          int x = 70;
+          int y = 165 + shown * 85;
 
           if (mouseOver(x + 500, y + 20, 150, 30)) {
             link(chemLink[i]);
@@ -333,12 +374,34 @@ void mousePressed() {
     checkPageButtons(totalFound, 3);
   }
 
-  else if (screen == 4 || screen == 5) {
+  else if (screen == 4) {
+    if (backClicked()) {
+      screen = 1;
+    }
+
+    if (mouseOver(250, 98, 420, 32)) activeField = 1;
+    if (mouseOver(250, 138, 420, 32)) activeField = 2;
+    if (mouseOver(250, 178, 420, 32)) activeField = 3;
+    if (mouseOver(250, 218, 420, 32)) activeField = 4;
+    if (mouseOver(250, 258, 420, 32)) activeField = 5;
+    if (mouseOver(250, 298, 420, 32)) activeField = 6;
+    if (mouseOver(250, 338, 420, 32)) activeField = 7;
+    if (mouseOver(250, 378, 420, 32)) activeField = 8;
+    if (mouseOver(250, 418, 420, 32)) activeField = 9;
+
+    if (mouseOver(250, 500, 250, 50)) {
+      saveManualChemical();
+    }
+  }
+
+  else if (screen == 5) {
     if (backClicked()) {
       screen = 1;
     }
   }
 }
+  
+
 // elevsiden
 // ======================================================
 
@@ -392,9 +455,9 @@ void drawStudentChemicalCard(int i, int x, int y) {
 
   textSize(13);
   text("Formel: " + chemFormula[i], x + 20, y + 42);
-  text("Molmasse: " + chemMolmasse[i], x + 160, y + 42);
-  text("Kategori: " + chemCategory[i], x + 360, y + 42);
-
+  text("Kategori: " + chemCategory[i], x + 170, y + 42);
+  text("Tilstand: " + chemState[i], x + 360, y + 42);
+  
   drawSmallButton(x + 580, y + 20, 150, 30, "Sikkerhedsdatablad");
   
   textAlign(CENTER, CENTER);
@@ -407,7 +470,7 @@ void drawStudentChemicalCard(int i, int x, int y) {
 void drawApproveScreen() {
   fill(0);
   textSize(34);
-  text("Godkend kemikalier", width / 2, 60);
+  text("Godkend kemikalier", width / 2, 45);
 
   fill(0);
   textAlign(LEFT, CENTER);
@@ -418,7 +481,7 @@ void drawApproveScreen() {
   
   textSize(15);
   fill(70);
-  text("Sæt flueben ved de kemikalier, der findes på skolen.", width / 2, 105); //**redigere placering
+  text("Sæt flueben ved de kemikalier, der findes på skolen.", 80,130); 
   
   int shown = 0;
   int found = 0;
@@ -429,10 +492,10 @@ void drawApproveScreen() {
     if (matchesSearch(i, searchApprove)) {
       if (found >= skip && shown < chemicalsPerPage) {
         int y = 165 + shown * 85;
-    drawChemicalCard(i, 70, y);
-    shown++;
+        drawChemicalCard(i, 70, y);
+        shown++;
   }
-    found++;
+        found++;
     }
   }
   
@@ -443,7 +506,7 @@ void drawApproveScreen() {
     text("Ingen kemikalier fundet.", width / 2, 360);
   }
   drawPageButtons(approvePage, found);
-  drawBackButton();  ///****tilbage knap virker ik fix 
+  drawBackButton();  
 }
 
 
@@ -459,8 +522,8 @@ void drawChemicalCard(int i, int x, int y) {
 
   textSize(13);
   text("Formel: " + chemFormula[i], x + 20, y + 42);
-  text("Kategori: " + chemCategory[i], x + 20, y + 45);
-  text("Molmasse: " + chemMolmasse[i], x + 330, y + 42);
+  text("Kategori: " + chemCategory[i], x + 170, y + 42);
+  text("Tilstand: " + chemState[i], x + 360, y + 42);
   
   drawSmallButton(x + 500, y + 20, 150, 30, "Sikkerhedsdatablad");
 
@@ -489,63 +552,81 @@ void drawChemicalCard(int i, int x, int y) {
 // ======================================================
 
 void addStartChemicals() {
-  addChemical("Saltsyre", "HCl", "36.46 g/mol", "Syre", "Syre-base, pH, titrering",
-    "https://app.ecoonline.com//documents/msds/1014950/28142883_286_a75e1c80e9bcecc4986832c615479bb0.pdf");
+  addChemical("Saltsyre", "36.46 g/mol", "HCl", "Syre", "Væske", "","Syre-base, pH, titrering",
+    "https://app.ecoonline.com//documents/msds/1014950/28142883_286_a75e1c80e9bcecc4986832c615479bb0.pdf",
+     "Syre-base, pH, titrering", false);
 
-  addChemical("Natriumhydroxid", "NaOH", "40 g/mol", "Base", "Titrering, pH, neutralisation",
-    "https://media.frederiksen-scientific.com/documents/25673778_286_517396d3fbd504f10a4b07b098e8f89d.pdf");
+  addChemical("Natriumhydroxid","40 g/mol", "NaOH", "Base", "Væske", "", "Titrering, pH, neutralisation",
+    "https://media.frederiksen-scientific.com/documents/25673778_286_517396d3fbd504f10a4b07b098e8f89d.pdf",
+    "Titrering, pH, neutralisation", false);
 
-  addChemical("Ethansyre", "CH3COOH", "60.05 g/mol", "Svag Syre", "Syrer, pH, eddikesyre",
-    "https://media.frederiksen-scientific.com/documents/23709882_286_729ba15a5db5791b74f8363a221e0ae6.pdf");
+  addChemical("Ethansyre",  "60.05 g/mol", "CH3COOH", "Svag Syre", "Væske", "", "Syrer, pH, eddikesyre",
+    "https://media.frederiksen-scientific.com/documents/23709882_286_729ba15a5db5791b74f8363a221e0ae6.pdf",
+    "Syrer, pH, eddikesyre", false);
 
-  addChemical("Ammoniakvand", "NH3", "17.03 g/mol", "Base", "Svage baser, ligevægt",
-    "https://media.frederiksen-scientific.com/documents/23709144_286_90d05ef88e885f905f520e6d0ad12f38.pdf");
+  addChemical("Ammoniakvand","17.03 g/mol", "NH3", "Base", "Væske", "", "Svage baser, ligevægt",
+    "https://media.frederiksen-scientific.com/documents/23709144_286_90d05ef88e885f905f520e6d0ad12f38.pdf",
+    "Svage baser, ligevægt", false);
 
-  addChemical("Natriumchlorid", "NaCl", "58.44 g/mol", "Salt", "Ioner, opløsninger, ledningsevne",
-    "https://media.frederiksen-scientific.com/documents/24468866_286_fbaaa325691679abf8abf8fcec5d54e4.pdf");
+  addChemical("Natriumchlorid","58.44 g/mol", "NaCl", "Salt", "Fast stof", "","Ioner, opløsninger, ledningsevne",
+    "https://media.frederiksen-scientific.com/documents/24468866_286_fbaaa325691679abf8abf8fcec5d54e4.pdf", 
+    "Ioner, opløsninger, ledningsevne", false);
 
-  addChemical("Kobbersulfat", "CuSO4*5H2O", "249.68 g/mol", "Salt", "Ioner, farvereaktioner, redox",
-    "https://media.frederiksen-scientific.com/documents/24563838_286_a3b9d27bbdf5418689b03109439d953f.pdf");
+  addChemical("Kobbersulfat", "249.68 g/mol", "CuSO4*5H2O", "Salt", "Væske", "", "Ioner, farvereaktioner, redox",
+    "https://media.frederiksen-scientific.com/documents/24563838_286_a3b9d27bbdf5418689b03109439d953f.pdf",
+    "Ioner, farvereaktioner, redox", false);
 
-  addChemical("Sølvnitrat", "AgNO3", "169.87 g/mol", "Salt", "Påvisning af chloridioner",
-    "https://media.frederiksen-scientific.com/documents/25364356_286_d50d143e9c85f7881a8da2ca42052dc3.pdf");
+  addChemical("Sølvnitrat","169.87 g/mol", "AgNO3", "Salt", "Væske", "", "Påvisning af chloridioner",
+    "https://media.frederiksen-scientific.com/documents/25364356_286_d50d143e9c85f7881a8da2ca42052dc3.pdf",
+    "Påvisning af chloridioner", false);
 
-  addChemical("Natriumcarbonat", "Na2CO3", "105.99 g/mol", "Base", "Syre-base, carbonatreaktioner",
-    "https://media.frederiksen-scientific.com/documents/24722646_286_8152d212e9a2f2e10f3bde8721f2e9b5.pdf");
+  addChemical("Natriumcarbonat","105.99 g/mol", "Na2CO3", "Base", "Fast stof", "", "Syre-base, carbonatreaktioner",
+    "https://media.frederiksen-scientific.com/documents/24722646_286_8152d212e9a2f2e10f3bde8721f2e9b5.pdf",
+    "Syre-base, carbonatreaktioner", false);
 
-  addChemical("Natriumhydrogencarbonat", "NaHCO3", "84.01 g/mol", "Base", "CO2-dannelse, syrereaktioner",
-    "https://media.frederiksen-scientific.com/documents/24722646_286_8152d212e9a2f2e10f3bde8721f2e9b5.pdf");
+  addChemical("Natriumhydrogencarbonat", "84.01 g/mol", "NaHCO3", "Base", "Fast stof", "","CO2-dannelse, syrereaktioner",
+    "https://media.frederiksen-scientific.com/documents/24722646_286_8152d212e9a2f2e10f3bde8721f2e9b5.pdf",
+    "CO2-dannelse, syrereaktioner", false);
 
-  addChemical("Kaliumpermanganat", "KMnO4", "158.04 g/mol", "Oxidationsmiddel", "Redoxforsøg",
-    "https://www.frederiksen-scientific.dk/");
+  addChemical("Kaliumpermanganat","158.04 g/mol", "KMnO4", "Oxidationsmiddel", "Væske", "", "Redoxforsøg",
+    "https://www.frederiksen-scientific.dk/",
+    "Redoxforsøg", false);
 
-  addChemical("Kaliumiodid", "KI", "166.00 g/mol", "Salt", "Redox, iodreaktioner",
-    "https://media.frederiksen-scientific.com/documents/24240288_286_b5a300a8f9a71b93ca35cb0ff77e030f.pdf");
+  addChemical("Kaliumiodid",  "166.00 g/mol", "KI", "Salt", "Væske", "", "Redox, iodreaktioner",
+    "https://media.frederiksen-scientific.com/documents/24240288_286_b5a300a8f9a71b93ca35cb0ff77e030f.pdf",
+    "Redox, iodreaktioner", false);
 
-  addChemical("Jodopløsning", "I2", "253.81 g/mol", "Reagens", "Stivelsestest, redox",
-    "https://media.frederiksen-scientific.com/documents/24909491_286_b24bb79f6fb292c2458f0d4da3df21f1.pdf");
+  addChemical("Jodopløsning",  "253.81 g/mol", "I2", "Reagens", "Væske", "", "Stivelsestest, redox",
+    "https://media.frederiksen-scientific.com/documents/24909491_286_b24bb79f6fb292c2458f0d4da3df21f1.pdf",
+    "Stivelsestest, redox", false);
 
-  addChemical("Ethanol", "C2H5OH", "46.07 g/mol", "Organisk stof", "Alkoholer, forbrænding, opløselighed",
-    "https://media.frederiksen-scientific.com/documents/23435890_286_fe1aed637df262b2a08f40fae0c46c1d.pdf");
+  addChemical("Ethanol", "46.07 g/mol", "C2H5OH", "Organisk stof", "Væske", "", "Alkoholer, forbrænding, opløselighed",
+    "https://media.frederiksen-scientific.com/documents/23435890_286_fe1aed637df262b2a08f40fae0c46c1d.pdf",
+    "Alkoholer, forbrænding, opløselighed", false);
 
-  addChemical("Acetone", "(CH3)2CO", "58.08 g/mol", "Organisk stof", "Opløsningsmiddel, organiske stoffer",
-    "https://media.frederiksen-scientific.com/documents/23409280_286_0bec3da39adbeda8cd7b70c494d4b812.pdf");
+  addChemical("Acetone", "58.08 g/mol", "(CH3)2CO", "Organisk stof", "Væske", "","Opløsningsmiddel, organiske stoffer",
+    "https://media.frederiksen-scientific.com/documents/23409280_286_0bec3da39adbeda8cd7b70c494d4b812.pdf",
+    "Opløsningsmiddel, organiske stoffer", false);
 
-  addChemical("Hydrogenperoxid", "H2O2", "34.01 g/mol", "Oxidationsmiddel", "Reaktionshastighed, katalyse, redox",
-    "https://media.frederiksen-scientific.com/documents/24207584_286_642f1788913feab99c544588b2f99004.pdf");
+  addChemical("Hydrogenperoxid", "34.01 g/mol", "H2O2", "Oxidationsmiddel", "Væske", "", "Reaktionshastighed, katalyse, redox",
+    "https://media.frederiksen-scientific.com/documents/24207584_286_642f1788913feab99c544588b2f99004.pdf",
+    "Reaktionshastighed, katalyse, redox", false);
 }
 
-void addChemical(String name, String formula, String molmasse, String category, String description, String linkText) {
+void addChemical(String name, String molmasse, String formula, String category, String state, String location, String description, String linkText,String notes, boolean approved) {
   if (totalChemicals >= maxChemicals) {
     return;
   }
   chemName[totalChemicals] = name;
-  chemFormula[totalChemicals] = formula;
   chemMolmasse[totalChemicals] = molmasse;
+  chemFormula[totalChemicals] = formula;
   chemCategory[totalChemicals] = category;
+  chemState[totalChemicals] = state;
+  chemLocation[totalChemicals] = location;
   chemDescription[totalChemicals] = description;
   chemLink[totalChemicals] = linkText;
-  chemApproved[totalChemicals] = false;
+  chemNotes[totalChemicals] = notes;
+  chemApproved[totalChemicals] = approved;
 
   totalChemicals++;
 }
@@ -554,22 +635,26 @@ void saveManualChemical() {
     message = "Du skal skrive et navn.";
     return;
   }
-
-  String formula = manualFormula;
-  if (trim(formula).length() == 0) {
-    formula = "Ikke angivet";
-  }
-
   String molmasse = manualMolmasse;
   if (trim(molmasse).length() == 0) {
     molmasse = "Ikke angivet";
+  }
+  
+  String formula = manualFormula;
+  if (trim(formula).length() == 0) {
+    formula = "Ikke angivet";
   }
 
   String category = manualCategory;
   if (trim(category).length() == 0) {
     category = "Andet";
   }
-
+  
+  String state = manualState;
+  if (trim(state).length() == 0) {
+    state = "Ikke angivet";
+  }
+  
   String description = manualDescription;
   if (trim(description).length() == 0) {
     description = "Ingen beskrivelse endnu.";
@@ -583,8 +668,34 @@ void saveManualChemical() {
   if (!linkText.startsWith("http://") && !linkText.startsWith("https://")) {
     linkText = "https://" + linkText;
   }
+   addChemical(
+    manualName,
+    molmasse,
+    formula,
+    category,
+    state,
+    manualLocation,
+    description,
+    linkText,
+    manualNotes,
+    true
+  );
+  
+ message = manualName + " er tilføjet og godkendt.";
 
-}
+  manualName = "";
+  manualMolmasse = "";
+  manualFormula = "";
+  manualCategory = "";
+  manualState = "";
+  manualLocation = "";
+  manualDescription = "";
+  manualLink = "";
+  manualNotes = "";
+}  
+  
+
+
 // søgning
 // ======================================================
 
@@ -635,25 +746,35 @@ void drawInputBox(int x, int y, int w, int h, String value, String placeholder, 
 }
 
 String getActiveText() {
-  if (activeField == 100) {
-    return searchApprove;
-  }
-
-  if (activeField == 101) {
-    return searchStudent;
-  }
-
+  if (activeField == 100) return searchApprove;
+  if (activeField == 101) return searchStudent;
+  
+  if (activeField == 1) return manualName;
+  if (activeField == 2) return manualMolmasse;
+  if (activeField == 3) return manualFormula;
+  if (activeField == 4) return manualCategory;
+  if (activeField == 5) return manualState;
+  if (activeField == 6) return manualLocation;
+  if (activeField == 7) return manualDescription;
+  if (activeField == 8) return manualLink;
+  if (activeField == 9) return manualNotes;
+  
   return "";
 }
 
 void setActiveText(String t) {
-  if (activeField == 100) {
-    searchApprove = t;
-  }
-
-  if (activeField == 101) {
-    searchStudent = t;
-  }
+  if (activeField == 100) searchApprove = t;
+  if (activeField == 101) searchStudent = t;
+  
+  if (activeField == 1) manualName = t;
+  if (activeField == 2) manualMolmasse = t;
+  if (activeField == 3) manualFormula = t;
+  if (activeField == 4) manualCategory = t;
+  if (activeField == 5) manualState = t;
+  if (activeField == 6) manualLocation = t;
+  if (activeField == 7) manualDescription = t;
+  if (activeField == 8) manualLink = t;
+  if (activeField == 9) manualNotes = t;  
 }
 
 
@@ -663,32 +784,41 @@ void setActiveText(String t) {
 void drawManualScreen() {
   fill(0);
   textSize(34);
-  text("Manuel tilføjelse", width / 2, 90);
+  text("Manuel tilføjelse", width / 2, 40);
 
   fill(0);
   textAlign(LEFT, CENTER);
   textSize(15);
-  text("Her kan læreren tilføje et kemikalie, hvis det ikke findes i databasen.", 70, 85);
+  text("Her kan du tilføje et kemikalie, hvis det ikke findes i databasen.", 70, 75);
 
-  drawLabel("Navn:", 70, 135);
-  drawInputBox(250, 115, 420, 35, manualName, "fx Saltsyre", 1);
+  drawLabel("Navn:", 70, 115);
+  drawInputBox(250, 98, 420, 32, manualName, "fx Saltsyre", 1);
+  
+  drawLabel("Molmasse:", 70, 155);
+  drawInputBox(250, 138, 420, 32, manualMolmasse, "fx 36.46 g/mol", 2);
 
-  drawLabel("Formel:", 70, 185);
-  drawInputBox(250, 165, 420, 35, manualFormula, "fx HCl", 2);
+  drawLabel("Formel:", 70, 195);
+  drawInputBox(250, 178, 420, 32, manualFormula, "fx HCl", 3);
 
-  drawLabel("Molmasse:", 70, 235);
-  drawInputBox(250, 215, 420, 35, manualMolmasse, "fx 36.46 g/mol", 3);
+  drawLabel("Kategori:", 70, 235);
+  drawInputBox(250, 218, 420, 32, manualCategory, "fx Syre, Base eller Salt", 4);
+  
+  drawLabel("Tilstand:", 70, 275);
+  drawInputBox(250, 258, 420, 32, manualState, "fx Væske eller Fast stof", 5);
 
-  drawLabel("Kategori:", 70, 285);
-  drawInputBox(250, 265, 420, 35, manualCategory, "fx Syre, Base eller Salt", 4);
+  drawLabel("Placering:", 70, 315);
+  drawInputBox(250, 298, 420, 32, manualLocation, "frivillig", 6);
+  
+  drawLabel("Beskrivelse:", 70, 355);
+  drawInputBox(250, 338, 420, 32, manualDescription, "kort beskrivelse", 7);
 
-  drawLabel("Beskrivelse:", 70, 335);
-  drawInputBox(250, 315, 420, 35, manualDescription, "kort beskrivelse", 5);
+  drawLabel("Sikkerhedsdatablad:", 70, 395);
+  drawInputBox(250, 378, 420, 32, manualLink, "link til hjemmeside", 8);
+  
+  drawLabel("Noter:", 70, 435);
+  drawInputBox(250, 418, 420, 32, manualNotes, "eventuelle noter", 9);
 
-  drawLabel("Sikkerhedsdatablad:", 70, 385);
-  drawInputBox(250, 365, 420, 35, manualLink, "link til hjemmeside", 6);
-
-  drawButton(250, 450, 250, 50, "Tilføj kemikalie");
+  drawButton(250, 500, 250, 50, "Tilføj kemikalie");
 
   fill(0, 120, 0);
   textAlign(LEFT, CENTER);
