@@ -1,12 +1,13 @@
 
 
-int screen = 4;
+int screen = 5;
 // 0 = startside
 // 1 = lærerside
 // 2 = elevside
 // 3 = godkend kemikalier
 // 4 = manuel tilføjelse
 // 5 = skabe
+// 6 = indhold i skab
 
 int maxChemicals = 50;
 int totalChemicals = 0;
@@ -22,8 +23,15 @@ String[] chemLink = new String[maxChemicals];
 String[] chemNotes = new String[maxChemicals];
 boolean[] chemApproved = new boolean[maxChemicals];
 
+
+// -1 betyder ikke placeret i et skab
+int[] chemCabinet = new int[maxChemicals];
+
+
+//sider
 int approvePage = 0;
 int studentPage = 0;
+int cabinetListPage = 0;
 int chemicalsPerPage = 5;
 
 //søge
@@ -43,6 +51,11 @@ String manualLink = "";
 String manualNotes = "";
 
 String message = "";
+
+// Skab
+int numberOfCabinets = 3;
+int selectedCabinet = -1;
+int selectedChemicalForCabinet = -1;
 
 //tekstfelt
 int activeField = -1;
@@ -70,7 +83,10 @@ void draw() {
     drawManualScreen();
   } else if (screen == 5) {
     drawCabinetScreen();
+  } else if (screen == 6) {
+    drawCabinetContentScreen();
   }
+
   //se musen for draw (husk x den)
   pushStyle();
   fill(255, 0, 0);
@@ -188,29 +204,21 @@ void drawPageButtons(int page, int totalItems) {
 
 void checkPageButtons(int totalItems, int whichScreen) {
   if (mouseOver(300, 625, 100, 35)) {
-    if (whichScreen == 3 && approvePage > 0) {
-      approvePage--;
+    if (whichScreen == 3 && approvePage > 0) approvePage--;
+    if (whichScreen == 2 && studentPage > 0) studentPage--;
     }
-
-    if (whichScreen == 2 && studentPage > 0) {
-      studentPage--;
-    }
-  }
+  
 
   if (mouseOver(500, 625, 100, 35)) {
     if (whichScreen == 3) {
-      if ((approvePage + 1) * chemicalsPerPage < totalItems) {
-        approvePage++;
+      if ((approvePage + 1) * chemicalsPerPage < totalItems) approvePage++;
       }
-    }
 
     if (whichScreen == 2) {
-      if ((studentPage + 1) * chemicalsPerPage < totalItems) {
-        studentPage++;
+      if ((studentPage + 1) * chemicalsPerPage < totalItems) studentPage++;
       }
     }
   }
-}
 
 int countSearchResults(String searchText, boolean onlyApproved) {
   int count = 0;
@@ -249,14 +257,10 @@ void keyPressed() {
   setActiveText(currentText);
 
   // Når man søger, starter man fra side 1 igen
-  if (activeField == 100) {
-    approvePage = 0;
+  if (activeField == 100) approvePage = 0;
+  if (activeField == 101) studentPage = 0;
   }
 
-  if (activeField == 101) {
-    studentPage = 0;
-  }
-}
 
 //ved Tryk/ navigeere
 //===============================================================
@@ -311,7 +315,7 @@ void mousePressed() {
   }
     int shown = 0;
     int found = 0;
-    int skip = approvePage * chemicalsPerPage;
+    int skip = studentPage * chemicalsPerPage;
     
     
     // Klik på checkbox ved kemikalier
@@ -345,7 +349,7 @@ void mousePressed() {
       activeField = 100;
   }
   
-      int shown = 0;
+    int shown = 0;
     int found = 0;
     int skip = approvePage * chemicalsPerPage;
 
@@ -398,9 +402,82 @@ void mousePressed() {
     if (backClicked()) {
       screen = 1;
     }
+    // minus-knap
+    if (mouseOver(60, 160, 40, 30)) {
+      if (numberOfCabinets > 1) {
+        numberOfCabinets--;
+      }
+    }
+
+    // plus-knap (fjen græse senere
+    if (mouseOver(240, 160, 40, 30)) {
+      if (numberOfCabinets < 6) {
+        numberOfCabinets++;
+      }
+    }
+
+    // sideknapper til listen med godkendte kemikalier
+    int approvedCount = countApprovedChemicals();
+
+    if (mouseOver(60, 610, 100, 35)) {
+      if (cabinetListPage > 0) {
+        cabinetListPage--;
+      }
+    }
+
+    if (mouseOver(175, 610, 100, 35)) {
+      if ((cabinetListPage + 1) * chemicalsPerPage < approvedCount) {
+        cabinetListPage++;
+      }
+    }
+
+    // Klik på et godkendt kemikalie
+    int shown = 0;
+    int found = 0;
+    int skip = cabinetListPage * chemicalsPerPage;
+
+    for (int i = 0; i < totalChemicals; i++) {
+      if (chemApproved[i]) {
+        if (found >= skip && shown < chemicalsPerPage) {
+          int y = 260 + shown * 65;
+
+          if (mouseOver(60, y, 380, 55)) {
+            selectedChemicalForCabinet = i;
+            message = "Vælg nu et skab";
+          }
+
+          shown++;
+        }
+
+        found++;
+      }
+    }
+
+    // Klik på et skab
+    for (int i = 0; i < numberOfCabinets; i++) {
+      int x = 500 + (i % 3) * 125;
+      int y = 270 + (i / 3) * 145;
+
+      if (mouseOver(x, y, 110, 120)) {
+        if (selectedChemicalForCabinet != -1) {
+          chemCabinet[selectedChemicalForCabinet] = i;
+          message = chemName[selectedChemicalForCabinet] + " er lagt i Skab " + (i + 1);
+          selectedChemicalForCabinet = -1;
+        } else {
+          selectedCabinet = i;
+          screen = 6;
+        }
+      }
+    }
+  }
+
+  else if (screen == 6) {
+    if (backClicked()) {
+      screen = 5;
+    }
   }
 }
-  
+ 
 
 // elevsiden
 // ======================================================
@@ -492,7 +569,7 @@ void drawApproveScreen() {
     if (matchesSearch(i, searchApprove)) {
       if (found >= skip && shown < chemicalsPerPage) {
         int y = 165 + shown * 85;
-        drawChemicalCard(i, 70, y);
+        drawApproveChemicalCard(i, 70, y);
         shown++;
   }
         found++;
@@ -510,7 +587,7 @@ void drawApproveScreen() {
 }
 
 
-void drawChemicalCard(int i, int x, int y) {
+void drawApproveChemicalCard(int i, int x, int y) {
   fill(255);
   stroke(180);
   rect(x, y, 760, 70, 10);
@@ -702,19 +779,36 @@ void saveManualChemical() {
 boolean matchesSearch(int i, String searchText) {
   String s = searchText.toLowerCase();
 
-  if (chemName[i].toLowerCase().contains(s)) {
-    return true;
-  }
-
-  if (chemCategory[i].toLowerCase().contains(s)) {
-    return true;
-  }
-
-  if (chemFormula[i].toLowerCase().contains(s)) {
-    return true;
-  }
-
+  if (chemName[i].toLowerCase().contains(s)) return true;
+  if (chemCategory[i].toLowerCase().contains(s))return true;
+  if (chemFormula[i].toLowerCase().contains(s))return true;
   return false;
+}
+
+
+//for skab
+int countChemicalsInCabinet(int cabinetNumber) {
+  int count = 0;
+
+  for (int i = 0; i < totalChemicals; i++) {
+    if (chemApproved[i] && chemCabinet[i] == cabinetNumber) {
+      count++;
+    }
+  }
+
+  return count;
+}
+
+int countApprovedChemicals() {
+  int count = 0;
+
+  for (int i = 0; i < totalChemicals; i++) {
+    if (chemApproved[i]) {
+      count++;
+    }
+  }
+
+  return count;
 }
 
 //input feltetl
@@ -834,8 +928,172 @@ void drawManualScreen() {
 void drawCabinetScreen() {
   fill(0);
   textSize(34);
-  text("Skabe", width / 2, 90);
+  text("Skabe", width / 2, 45);
 
+  fill(0);
+  textAlign(LEFT, CENTER);
+  textSize(15);
+  text("1. Klik på et godkendt kemikalie", 60, 85);
+  text("2. Klik på et skab for at placere kemikaliet", 60, 110);
+  text("Hvis intet kemikalie er valgt, åbner skabet.", 60, 135);
+  
+   drawSmallButton(60, 160, 40, 30, "-");
+
+  fill(0);
+  textAlign(LEFT, CENTER);
+  textSize(15);
+  text("Antal skabe: " + numberOfCabinets, 115, 175);
+
+  drawSmallButton(240, 160, 40, 30, "+");
+
+  // liste med godkendte kemikalier
+  fill(0);
+  textSize(20);
+  textAlign(LEFT, CENTER);
+  text("Godkendte kemikalier", 60, 230);
+
+  int shown = 0;
+  int found = 0;
+  int skip = cabinetListPage * chemicalsPerPage;
+
+  for (int i = 0; i < totalChemicals; i++) {
+    if (chemApproved[i]) {
+      if (found >= skip && shown < chemicalsPerPage) {
+        int y = 260 + shown * 65;
+        drawCabinetChemicalCard(i, 60, y);
+        shown++;
+      }
+
+      found++;
+    }
+  }
+
+  if (found == 0) {
+    fill(0);
+    textSize(15);
+    text("Ingen godkendte kemikalier endnu", 60, 270);
+  }
+
+  drawSmallButton(60, 610, 100, 35, "Forrige");
+  drawSmallButton(175, 610, 100, 35, "Næste");
+
+  // Skabe på højre side
+  fill(0);
+  textSize(20);
+  textAlign(LEFT, CENTER);
+  text("Kemikalieskabe", 500, 230);
+
+  for (int i = 0; i < numberOfCabinets; i++) {
+    int x = 500 + (i % 3) * 125;
+    int y = 270 + (i / 3) * 145;
+
+    drawCabinet(i, x, y);
+  }
+
+  if (selectedChemicalForCabinet != -1) {
+    fill(0, 100, 0);
+    textSize(14);
+    textAlign(LEFT, CENTER);
+    text("Valgt: " + chemName[selectedChemicalForCabinet], 500, 625);
+  }
+
+  fill(0, 100, 0);
+  textSize(14);
+  text(message, 500, 650);
 
   drawBackButton();
 }
+
+void drawCabinetChemicalCard(int i, int x, int y) {
+  if (selectedChemicalForCabinet == i) {
+    fill(210, 255, 210);
+  } else {
+    fill(255);
+  }
+
+  stroke(180);
+  rect(x, y, 380, 55, 8);
+
+  fill(0);
+  textAlign(LEFT, CENTER);
+  textSize(14);
+  text(chemName[i], x + 15, y + 18);
+
+  textSize(12);
+
+  if (chemCabinet[i] == -1) {
+    text("Ikke placeret", x + 15, y + 40);
+  } else {
+    text("Skab " + (chemCabinet[i] + 1), x + 15, y + 40);
+  }
+}
+
+void drawCabinet(int i, int x, int y) {
+  fill(200, 210, 220);
+  stroke(0);
+  rect(x, y, 110, 120, 10);
+
+  // to døre
+  line(x + 55, y, x + 55, y + 120);
+
+  // håndtag
+  fill(0);
+  ellipse(x + 48, y + 65, 6, 6);
+  ellipse(x + 62, y + 65, 6, 6);
+
+  fill(0);
+  textAlign(CENTER, CENTER);
+  textSize(15);
+  text("Skab " + (i + 1), x + 55, y + 25);
+
+  textSize(12);
+  text(countChemicalsInCabinet(i) + " kemikalier", x + 55, y + 100);
+}
+  
+  
+ //ind i skane
+//// -------------------------------------------
+ void drawCabinetContentScreen() {
+  fill(0);
+  textSize(34);
+  text("Indhold i Skab " + (selectedCabinet + 1), width / 2, 55);
+
+  int y = 145;
+  int found = 0;
+
+  for (int i = 0; i < totalChemicals; i++) {
+    if (chemApproved[i] && chemCabinet[i] == selectedCabinet) {
+      drawCabinetContentCard(i, 70, y);
+      y = y + 80;
+      found++;
+    }
+  }
+
+  if (found == 0) {
+    fill(0);
+    textAlign(CENTER, CENTER);
+    textSize(18);
+    text("Dette skab er tomt.", width / 2, 350);
+  }
+
+  drawBackButton();
+}
+
+void drawCabinetContentCard(int i, int x, int y) {
+  fill(255);
+  stroke(180);
+  rect(x, y, 760, 65, 8);
+
+  fill(0);
+  textAlign(LEFT, CENTER);
+  textSize(17);
+  text(chemName[i], x + 20, y + 20);
+
+  textSize(13);
+  text("Formel: " + chemFormula[i], x + 20, y + 45);
+  text("Kategori: " + chemCategory[i], x + 180, y + 45);
+  text("Tilstand: " + chemState[i], x + 370, y + 45);
+}
+
+ 
+ 
