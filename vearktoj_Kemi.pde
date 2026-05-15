@@ -1,6 +1,6 @@
 
 
-int screen = 5;
+int screen = 7;
 // 0 = startside
 // 1 = lærerside
 // 2 = elevside
@@ -8,9 +8,15 @@ int screen = 5;
 // 4 = manuel tilføjelse
 // 5 = skabe
 // 6 = indhold i skab
+// 7 = detaljer
 
 int maxChemicals = 50;
 int totalChemicals = 0;
+
+
+int selectedChemicalDetails = -1;
+int previousScreen = 0;
+
 
 String[] chemName = new String[maxChemicals];
 String[] chemFormula = new String[maxChemicals];
@@ -85,6 +91,9 @@ void draw() {
     drawCabinetScreen();
   } else if (screen == 6) {
     drawCabinetContentScreen();
+  } else if (screen == 7) {
+    drawDetailsScreen();
+    
   }
 
   //se musen for draw (husk x den)
@@ -190,6 +199,22 @@ boolean mouseOver(int x, int y, int w, int h) {
   }
 
   return false;
+}
+
+String getLocationText(int i) {
+  if (trim(chemLocation[i]).length() == 0) {
+    return "Ikke angivet";
+  } else {
+    return chemLocation[i];
+  }
+}
+
+String getNotesText(int i) {
+  if (trim(chemNotes[i]).length() == 0) {
+    return "Ingen noter";
+  } else {
+    return chemNotes[i];
+  }
 }
 
 void drawPageButtons(int page, int totalItems) {
@@ -475,9 +500,31 @@ void mousePressed() {
     if (backClicked()) {
       screen = 5;
     }
+      int y = 145;
+
+  for (int i = 0; i < totalChemicals; i++) {
+    if (chemApproved[i] && chemCabinet[i] == selectedCabinet) {
+      if (mouseOver(70, y, 760, 65)) {
+        selectedChemicalDetails = i;
+        previousScreen = 6;
+        screen = 7;
+      }
+
+      y = y + 80;
+    }
   }
 }
- 
+
+else if (screen == 7) {
+  if (backClicked()) {
+    screen = previousScreen;
+  }
+
+  if (mouseOver(110, 530, 250, 45)) {
+    link(chemLink[selectedChemicalDetails]);
+  }
+}
+}
 
 // elevsiden
 // ======================================================
@@ -1060,6 +1107,11 @@ void drawCabinet(int i, int x, int y) {
   textSize(34);
   text("Indhold i Skab " + (selectedCabinet + 1), width / 2, 55);
 
+  fill(70);
+  textAlign(LEFT, CENTER);
+  textSize(15);
+  text("Klik på et kemikalie for at se flere detaljer.", 70, 100);
+  
   int y = 145;
   int found = 0;
 
@@ -1095,7 +1147,52 @@ void drawCabinetContentCard(int i, int x, int y) {
   text("Formel: " + chemFormula[i], x + 20, y + 45);
   text("Kategori: " + chemCategory[i], x + 180, y + 45);
   text("Tilstand: " + chemState[i], x + 370, y + 45);
+  
+  fill(80);
+  textSize(12);
+  text("Klik for detaljer", x + 610, y + 45);
 }
 
- 
+ // mere info 
+ ///---------------------------------------
+ void drawDetailsScreen() {
+  fill(0);
+  textSize(34);
+  text("Detaljer", width / 2, 55);
+
+  if (selectedChemicalDetails == -1) {
+    fill(0);
+    textSize(18);
+    text("Intet kemikalie valgt", width / 2, 300);
+    drawBackButton();
+    return;
+  }
+
+  int i = selectedChemicalDetails;
+
+  fill(255);
+  stroke(180);
+  rect(70, 100, 760, 500, 12);
+
+  fill(0);
+  textAlign(LEFT, CENTER);
+  textSize(28);
+  text(chemName[i], 110, 140);
+
+  textSize(16);
+  text("Formel: " + chemFormula[i], 110, 200);
+  text("Molmasse: " + chemMolmasse[i], 110, 235);
+  text("Kategori: " + chemCategory[i], 110, 270);
+  text("Tilstand: " + chemState[i], 110, 305);
+  text("Placering: " + getLocationText(i), 110, 340);
+
+  text("Beskrivelse:", 110, 390);
+  text(chemDescription[i], 110, 420, 600, 45);
+
+  text("Noter: " + getNotesText(i), 110, 485);
+
+  drawButton(110, 530, 250, 45, "Åbn sikkerhedsdatablad");
+
+  drawBackButton();
+}
  
