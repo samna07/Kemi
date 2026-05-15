@@ -704,6 +704,8 @@ void addChemical(String name, String molmasse, String formula, String category, 
   chemLink[totalChemicals] = linkText;
   chemNotes[totalChemicals] = notes;
   chemApproved[totalChemicals] = approved;
+  
+  chemCabinet[totalChemicals] = -1;
 
   totalChemicals++;
 }
